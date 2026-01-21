@@ -1,0 +1,20 @@
+
+layer BiomePoints
+{
+    dimensions: 2
+    size: 64
+    point_sparsity: 24
+    point_data:
+        struct MyPoint
+        {
+            public int x;
+            public int y;
+            public int z;
+        }
+    depends on ... range 64
+
+    job:
+    {
+
+    }
+}
