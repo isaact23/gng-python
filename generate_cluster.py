@@ -1,4 +1,5 @@
 from code_writer import *
+from settings import CHUNK_WIDTH
 
 # Generate the cluster struct for a layer (stores all data for the entire world).
 def generate_cluster(layer):
@@ -31,6 +32,10 @@ def generate_cluster(layer):
     w.put("private NativeHashMap<" + vec_type + ", " + chunk_name + "> chunks;\n")
     w.put("private NativeHashMap<" + vec_type + ", JobHandle> jobs;\n")
     w.put("private int seed;\n")
+    w.put("\n")
+
+    # Constants
+    w.put("private const int CHUNK_WIDTH = " + str(CHUNK_WIDTH) + ";\n")
     w.put("\n")
 
     # Initialization routine

@@ -1,4 +1,5 @@
 from code_writer import *
+from settings import CHUNK_WIDTH
 
 # Generate the chunk struct for a layer (stores data for a portion of the world).
 def generate_chunk(layer):
@@ -22,6 +23,10 @@ def generate_chunk(layer):
     # Otherwise, store points in a list for quick traversal of non-null points.
     w.put("public NativeList<" + point_name + "> points;\n")
     w.put("public NativeReference<bool> isGenerated;\n")
+    w.put("\n")
+
+    # Constants
+    w.put("private const int CHUNK_WIDTH = " + str(CHUNK_WIDTH) + ";\n")
     w.put("\n")
 
     # Initialization

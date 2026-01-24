@@ -1,4 +1,5 @@
 from code_writer import *
+from settings import CHUNK_WIDTH
 
 # Generate the job code that generates a chunk (a portion of the world) for a layer.
 def generate_job(layer):
@@ -24,6 +25,10 @@ def generate_job(layer):
     if (layer["dimensions"] == 3):
         w.put("[ReadOnly] public int chunkZ;\n")
     w.put("[ReadOnly] public int seed;\n")
+    w.put("\n")
+
+    # Constants
+    w.put("private const int CHUNK_WIDTH = " + str(CHUNK_WIDTH) + ";\n")
     w.put("\n")
 
     # Routine
