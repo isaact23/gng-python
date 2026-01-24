@@ -17,7 +17,8 @@ layers = [
         "chunk_size": 256,
         "dimensions": 2,
         "point_sparsity": 24,
-        "point_data": {"type": "BiomeLocalPoint"} # This type must be defined manually.
+        "point_data": "BiomeLocalPoint", # This type must be defined manually.
+        "routine": "BiomePointRoutine.cs"
     },
     {
         "name": "biome_compositions",
@@ -31,11 +32,12 @@ layers = [
                 "dependency_range": 64
             }
         ],
-        "point_data": {"type": "BiomeComposition"}
+        "point_data": "BiomeComposition"
     },
     {
         "name": "hill_points",
         "class_prefix": "HillPoints",
+        "chunk_size": 128,
         "dimensions": 2,
         "point_sparsity": 24,
         "dependencies": [
@@ -43,11 +45,13 @@ layers = [
                 "name": "biome_compositions",
                 "dependency_range": 0
             }
-        ]
+        ],
+        "point_data": "int"
     },
     {
         "name": "altitudes",
         "class_prefix": "Altitudes",
+        "chunk_size": 64,
         "dimensions": 2,
         "point_sparsity": 1,
         "dependencies": [
@@ -55,11 +59,13 @@ layers = [
                 "name": "hill_points",
                 "dependency_range": 16
             }
-        ]
+        ],
+        "point_data": "int"
     },
     {
         "name": "terrain",
         "class_prefix": "Terrain",
+        "chunk_size": 32,
         "dimensions": 3,
         "point_sparsity": 1,
         "dependencies": [
@@ -68,7 +74,7 @@ layers = [
                 "dependency_range": 0
             }
         ],
-        "point_data": {"type": "Block"}
+        "point_data": "Block"
     }
 ]
 

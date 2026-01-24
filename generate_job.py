@@ -6,34 +6,42 @@ def generate_job(layer):
     w = CodeWriter(layer, class_name + ".cs")
 
     # Includes
-    w.write("using Unity.Burst;\n")
-    w.write("using Unity.Collections;\n")
-    w.write("using Unity.Jobs;\n")
-    w.write("using Unity.Mathematics;\n")
-    w.write("\n")
+    w.put("using Unity.Burst;\n")
+    w.put("using Unity.Collections;\n")
+    w.put("using Unity.Jobs;\n")
+    w.put("using Unity.Mathematics;\n")
+    w.put("\n")
 
     # Struct definition
-    w.write("[BurstCompile]\n")
-    w.write("public struct " + class_name + " : IJob\n")
+    w.put("[BurstCompile]\n")
+    w.put("public struct " + class_name + " : IJob\n")
     w.open_func()
 
     # Fields
-    w.write("public " + layer["class_prefix"] + "Chunk chunkData;\n")
-    w.write("[ReadOnly] public int chunkX;\n")
-    w.write("[ReadOnly] public int chunkY;\n")
+    w.put("public " + layer["class_prefix"] + "Chunk chunkData;\n")
+    w.put("[ReadOnly] public int chunkX;\n")
+    w.put("[ReadOnly] public int chunkY;\n")
     if (layer["dimensions"] == 3):
-        w.write("[ReadOnly] public int chunkZ;\n")
-    w.write("[ReadOnly] public int seed;\n")
-    w.write("\n")
+        w.put("[ReadOnly] public int chunkZ;\n")
+    w.put("[ReadOnly] public int seed;\n")
+    w.put("\n")
 
     # Routine
-    w.write("[BurstCompile]\n")
-    w.write("public void Execute()\n")
-    w.write("{\n")
+    w.put("[BurstCompile]\n")
+    w.put("public void Execute()\n")
+    w.put("{\n")
     w.shift_right()
 
     # Skip if already generated
-    w.write("if (chunkData.isGenerated) return;\n")
-    w.write("\n")
+    w.put("if (chunkData.isGenerated.Value) return;\n")
+    w.put("\n")
+
+    # Load user-provided routine
+    w.load_routine(layer["routine"])
+
+    # Finish job
+    w.put("chunkData.isGenerated.Value = true;\n")
+    w.close_func()
+    w.close_func()
 
     w.close()
