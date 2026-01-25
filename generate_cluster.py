@@ -1,9 +1,10 @@
 from code_writer import *
-from settings import CHUNK_WIDTH
+from settings import CHUNK_WIDTH, LAYERS
 
 # Generate the cluster struct for a layer (stores all data for the entire world).
-def generate_cluster(layer):
+def generate_cluster(layer_name):
     # Calculate some names
+    layer = LAYERS[layer_name]
     class_name = layer["class_prefix"] + "Cluster"
     chunk_name = layer["class_prefix"] + "Chunk"
     job_name = layer["class_prefix"] + "Job"

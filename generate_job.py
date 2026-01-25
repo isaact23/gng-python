@@ -1,8 +1,9 @@
 from code_writer import *
-from settings import CHUNK_WIDTH
+from settings import CHUNK_WIDTH, LAYERS
 
 # Generate the job code that generates a chunk (a portion of the world) for a layer.
-def generate_job(layer):
+def generate_job(layer_name):
+    layer = LAYERS[layer_name]
     class_name = layer["class_prefix"] + "Job"
     w = CodeWriter(layer, class_name + ".cs")
 
