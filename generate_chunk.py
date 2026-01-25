@@ -41,6 +41,7 @@ def generate_chunk(layer_name):
     w.shift_left()
     w.put("};\n")
     w.close_func()
+    w.put("\n")
 
     # Disposal routine
     w.put("[BurstCompile]\n")

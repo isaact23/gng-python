@@ -60,7 +60,7 @@ def generate_job(layer_name):
 
             # Helper method adds dependency chunks to this job
             w.put("[BurstCompile]\n")
-            w.put("public static void Add" + chunk_name + "Chunk(ref " + class_name + " job, " + chunk_name + " chunk, " + "in int2 chunkPos)\n")
+            w.put("public static void Add" + chunk_name + "(ref " + class_name + " job, " + chunk_name + " chunk, " + "in int2 chunkPos)\n")
             w.open_func()
             w.put("job." + array_name + "[Get" + LAYERS[dependency]["pascal_prefix"] + "Index(chunkPos)] = chunk;\n")
             w.close_func()

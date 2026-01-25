@@ -51,6 +51,7 @@ def generate_cluster(layer_name):
     w.shift_left()
     w.put("};\n")
     w.close_func()
+    w.put("\n")
 
     # Did start generating method
     w.put("[BurstCompile]\n")
@@ -58,6 +59,7 @@ def generate_cluster(layer_name):
     w.open_func()
     w.put("return cluster.chunks.ContainsKey(chunkPos);\n")
     w.close_func()
+    w.put("\n")
 
     # Did finish generating method
     w.put("[BurstCompile]\n")
@@ -65,6 +67,7 @@ def generate_cluster(layer_name):
     w.open_func()
     w.put("return cluster.chunks.TryGetValue(chunkPos, out " + chunk_name + " chunk) && chunk.isGenerated;\n")
     w.close_func()
+    w.put("\n")
 
     # Chunk getter method
     w.put("[BurstCompile]\n")
@@ -72,6 +75,7 @@ def generate_cluster(layer_name):
     w.open_func()
     w.put("return cluster.chunks[chunkPos];\n");
     w.close_func()
+    w.put("\n")
 
     # Chunk setter method
     w.put("[BurstCompile]\n")
@@ -79,6 +83,7 @@ def generate_cluster(layer_name):
     w.open_func()
     w.put("cluster.chunks[chunkPos] = chunk;\n");
     w.close_func()
+    w.put("\n")
 
     # Chunk generator method
     w.put("[BurstCompile]\n")
@@ -89,6 +94,7 @@ def generate_cluster(layer_name):
     w.put("handle = new JobHandle {};\n")
     w.put("return false;\n")
     w.close_func()
+    w.put("\n")
 
     w.put(chunk_name + ".Initialize(out " + chunk_name + " chunk);\n")
     w.put("cluster.chunks[chunkPos] = chunk;\n")
@@ -101,11 +107,13 @@ def generate_cluster(layer_name):
         w.put("chunkZ = chunkPos.z,\n")
     w.put("seed = cluster.seed\n")
     w.close_func()
+    w.put("\n")
 
     w.put("handle = job.Schedule();\n")
     w.put("cluster.jobs[chunkPos] = handle;\n")
     w.put("return true;\n")
     w.close_func()
+    w.put("\n")
 
     # Disposal routine
     w.put("[BurstCompile]\n")
