@@ -57,6 +57,8 @@ def generate_job(layer_name):
             chunk_name = LAYERS[dependency]["pascal_prefix"] + "Chunk"
             array_name = LAYERS[dependency]["camel_prefix"] + "Chunks"
             point_name = LAYERS[dependency]["point_data"]
+            dim = LAYERS[dependency]["dimensions"]
+            int_type = "int" + str(dim)
 
             # Helper method adds dependency chunks to this job
             w.put("[BurstCompile]\n")
@@ -78,20 +80,30 @@ def generate_job(layer_name):
             # Helper method fetches relative points from nearby dependency chunks
             w.put("[BurstCompile]\n")
             w.put("private static void Fetch" + LAYERS[dependency]["pascal_prefix"] + "From(ref " + class_name + " job, " +
-                "ref NativeList<" + point_name + "> points, in int2 offset)\n")
+                "ref NativeHashMap<" + int_type + ", " + point_name + "> localPoints, in " + int_type + " offset)\n")
             w.open_func()
             w.put(chunk_name + " chunk = job." + array_name + "[Get" + LAYERS[dependency]["pascal_prefix"] + "Index(chunkPos)] = chunk;\n")
+            w.put("NativeArray<" + int_type + "> positions = chunk.points.GetKeyArray(Allocator.Temp);\n")
             w.put("\n")
-            w.put("foreach (" + point_name + " point in chunk.points)\n")
-            w.open_func()
+
             w.put("int chunkX = job.chunkX + offset.x;\n")
             w.put("int chunkY = job.chunkY + offset.y;\n")
+            if dim == 3:
+                w.put("int chunkZ = job.chunkZ + offset.z;\n")
+
             w.put("\n")
-            w.put(point_name + " newPoint = point;\n")
-            w.put("newPoint.localX = point.localX + (chunkX * " + str(CHUNK_WIDTH) + ");\n")
-            w.put("newPoint.localY = point.localY + (chunkY * " + str(CHUNK_WIDTH) + ");\n")
-            w.put("points.Add(newPoint);\n")
+            w.put("for (int i = 0; i < positions.Length; i++)\n")
+            w.open_func()
+            w.put(int_type + " pos = positions[i];\n")
+
+            if dim == 2:
+                w.put(int_type + " adjustedPos = new " + int_type + "(chunkX * CHUNK_WIDTH, chunkY * CHUNK_WIDTH)\n")
+            else:
+                w.put(int_type + " adjustedPos = new " + int_type + "(chunkX * CHUNK_WIDTH, chunkY * CHUNK_WIDTH, chunkZ * CHUNK_WIDTH)\n")
+
+            w.put("localPoints.Add(adjustedPos, point);\n")
             w.close_func()
+            w.put("positions.Dispose();\n")
             w.close_func()
             w.put("\n")
 
@@ -110,8 +122,10 @@ def generate_job(layer_name):
         for dependency in layer["dependencies"]:
             point_name = LAYERS[dependency]["point_data"]
             dep_range = dependency_range_consts[dependency]["value"]
+            dim = LAYERS[dependency]["dimensions"]
+            int_type = "int" + str(dim)
 
-            w.put("NativeList<" + point_name + "> " + LAYERS[dependency]["camel_prefix"] + " = new(100, Allocator.TempJob);\n")
+            w.put("NativeHashMap<" + int_type + ", " + point_name + "> " + LAYERS[dependency]["camel_prefix"] + " = new(100, Allocator.TempJob);\n")
             w.put("for (int x = -" + str(dep_range) + "; x < " + str(dep_range) + "; x++)\n")
             w.open_func()
             w.put("for (int y = -" + str(dep_range) + "; y < " + str(dep_range) + "; y++)\n")

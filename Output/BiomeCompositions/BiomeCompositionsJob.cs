@@ -29,20 +29,21 @@ public struct BiomeCompositionsJob : IJob
     }
     
     [BurstCompile]
-    private static void FetchBiomePointsFrom(ref BiomeCompositionsJob job, ref NativeList<Biome> points, in int2 offset)
+    private static void FetchBiomePointsFrom(ref BiomeCompositionsJob job, ref NativeHashMap<int2, Biome> localPoints, in int2 offset)
     {
         BiomePointsChunk chunk = job.biomePointsChunks[GetBiomePointsIndex(chunkPos)] = chunk;
+        NativeArray<int2> positions = chunk.points.GetKeyArray(Allocator.Temp);
         
-        foreach (Biome point in chunk.points)
+        int chunkX = job.chunkX + offset.x;
+        int chunkY = job.chunkY + offset.y;
+        
+        for (int i = 0; i < positions.Length; i++)
         {
-            int chunkX = job.chunkX + offset.x;
-            int chunkY = job.chunkY + offset.y;
-            
-            Biome newPoint = point;
-            newPoint.localX = point.localX + (chunkX * 32);
-            newPoint.localY = point.localY + (chunkY * 32);
-            points.Add(newPoint);
+            int2 pos = positions[i];
+            int2 adjustedPos = new int2(chunkX * CHUNK_WIDTH, chunkY * CHUNK_WIDTH)
+            localPoints.Add(adjustedPos, point);
         }
+        positions.Dispose();
     }
     
     [BurstCompile]
@@ -50,7 +51,7 @@ public struct BiomeCompositionsJob : IJob
     {
         if (chunk.isGenerated.Value) return;
         
-        NativeList<Biome> biomePoints = new(100, Allocator.TempJob);
+        NativeHashMap<int2, Biome> biomePoints = new(100, Allocator.TempJob);
         for (int x = -2; x < 2; x++)
         {
             for (int y = -2; y < 2; y++)
@@ -61,18 +62,20 @@ public struct BiomeCompositionsJob : IJob
         
         /* Partial routine - injected into job script by source generator */
         
+        NativeArray<int2> biomePointPositions = biomePoints.GetKeyArray(Allocator.Temp);
+        
         // Calculate biome compositions for all tiles in the biome chunk
-        for (int localX = 0; localX < ClusterChunkSettings.UTILITY_CHUNK_WIDTH; localX++)
+        for (int localX = 0; localX < CHUNK_WIDTH; localX++)
         {
-            for (int localZ = 0; localZ < ClusterChunkSettings.UTILITY_CHUNK_WIDTH; localZ++)
+            for (int localY = 0; localY < CHUNK_WIDTH; localY++)
             {
                 BiomeComposition comp = new BiomeComposition
                 {
                     biomeCount = 0
                 };
-                foreach (BiomeLocalPoint biomePoint in biomePoints)
+                foreach (int2 biomePointPos in biomePointPositions)
                 {
-                    float distSquared = math.distancesq(new int2(localX, localZ), new int2(biomePoint.localX, biomePoint.localZ));
+                    float distSquared = math.distancesq(new int2(localX, localY), biomePointPos);
                     if (distSquared > ClusterChunkSettings.BIOME_POINT_INFLUENCE_RADIUS * ClusterChunkSettings.BIOME_POINT_INFLUENCE_RADIUS)
                     {
                         continue;
@@ -82,12 +85,15 @@ public struct BiomeCompositionsJob : IJob
                     // which is the reciprocal of the distance.
                     float influence = math.rsqrt(distSquared);
         
-                    BiomeComposition.AddBiome(ref comp, biomePoint.biome, influence);
+                    Biome biome = biomePoints[biomePointPos];
+                    BiomeComposition.AddBiome(ref comp, biome, influence);
                 }
                 BiomeComposition.Normalize(ref comp);
-                BiomeCompositionChunk.SetComposition(ref biomeCompChunk, localX, localZ, comp);
+                BiomeCompositionChunk.SetComposition(ref chunk, localX, localY, comp);
             }
         }
+        
+        biomePointPositions.Dispose();
         
         biomePoints.Dispose();
         chunk.isGenerated.Value = true;

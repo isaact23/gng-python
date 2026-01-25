@@ -31,20 +31,21 @@ public struct TerrainJob : IJob
     }
     
     [BurstCompile]
-    private static void FetchBiomeCompositionsFrom(ref TerrainJob job, ref NativeList<BiomeComposition> points, in int2 offset)
+    private static void FetchBiomeCompositionsFrom(ref TerrainJob job, ref NativeHashMap<int2, BiomeComposition> localPoints, in int2 offset)
     {
         BiomeCompositionsChunk chunk = job.biomeCompositionsChunks[GetBiomeCompositionsIndex(chunkPos)] = chunk;
+        NativeArray<int2> positions = chunk.points.GetKeyArray(Allocator.Temp);
         
-        foreach (BiomeComposition point in chunk.points)
+        int chunkX = job.chunkX + offset.x;
+        int chunkY = job.chunkY + offset.y;
+        
+        for (int i = 0; i < positions.Length; i++)
         {
-            int chunkX = job.chunkX + offset.x;
-            int chunkY = job.chunkY + offset.y;
-            
-            BiomeComposition newPoint = point;
-            newPoint.localX = point.localX + (chunkX * 32);
-            newPoint.localY = point.localY + (chunkY * 32);
-            points.Add(newPoint);
+            int2 pos = positions[i];
+            int2 adjustedPos = new int2(chunkX * CHUNK_WIDTH, chunkY * CHUNK_WIDTH)
+            localPoints.Add(adjustedPos, point);
         }
+        positions.Dispose();
     }
     
     [BurstCompile]
@@ -60,20 +61,21 @@ public struct TerrainJob : IJob
     }
     
     [BurstCompile]
-    private static void FetchAltitudesFrom(ref TerrainJob job, ref NativeList<int> points, in int2 offset)
+    private static void FetchAltitudesFrom(ref TerrainJob job, ref NativeHashMap<int2, int> localPoints, in int2 offset)
     {
         AltitudesChunk chunk = job.altitudesChunks[GetAltitudesIndex(chunkPos)] = chunk;
+        NativeArray<int2> positions = chunk.points.GetKeyArray(Allocator.Temp);
         
-        foreach (int point in chunk.points)
+        int chunkX = job.chunkX + offset.x;
+        int chunkY = job.chunkY + offset.y;
+        
+        for (int i = 0; i < positions.Length; i++)
         {
-            int chunkX = job.chunkX + offset.x;
-            int chunkY = job.chunkY + offset.y;
-            
-            int newPoint = point;
-            newPoint.localX = point.localX + (chunkX * 32);
-            newPoint.localY = point.localY + (chunkY * 32);
-            points.Add(newPoint);
+            int2 pos = positions[i];
+            int2 adjustedPos = new int2(chunkX * CHUNK_WIDTH, chunkY * CHUNK_WIDTH)
+            localPoints.Add(adjustedPos, point);
         }
+        positions.Dispose();
     }
     
     [BurstCompile]
@@ -81,7 +83,7 @@ public struct TerrainJob : IJob
     {
         if (chunk.isGenerated.Value) return;
         
-        NativeList<BiomeComposition> biomeCompositions = new(100, Allocator.TempJob);
+        NativeHashMap<int2, BiomeComposition> biomeCompositions = new(100, Allocator.TempJob);
         for (int x = -0; x < 0; x++)
         {
             for (int y = -0; y < 0; y++)
@@ -90,7 +92,7 @@ public struct TerrainJob : IJob
             }
         }
         
-        NativeList<int> altitudes = new(100, Allocator.TempJob);
+        NativeHashMap<int2, int> altitudes = new(100, Allocator.TempJob);
         for (int x = -0; x < 0; x++)
         {
             for (int y = -0; y < 0; y++)
