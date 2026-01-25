@@ -5,9 +5,9 @@ from settings import CHUNK_WIDTH, LAYERS
 def generate_cluster(layer_name):
     # Calculate some names
     layer = LAYERS[layer_name]
-    class_name = layer["class_prefix"] + "Cluster"
-    chunk_name = layer["class_prefix"] + "Chunk"
-    job_name = layer["class_prefix"] + "Job"
+    class_name = layer["pascal_prefix"] + "Cluster"
+    chunk_name = layer["pascal_prefix"] + "Chunk"
+    job_name = layer["pascal_prefix"] + "Job"
     vec_type = "int2"
     if (layer["dimensions"] == 3):
         vec_type = "int3"

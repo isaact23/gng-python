@@ -1,28 +1,35 @@
 CHUNK_WIDTH = 32
 
 # Any types defined here should be defined manually in a C# file (i.e. enums)
+# TODO: Write helper functions to inject prefixes automatically
 LAYERS = {
     "biome_points": {
-        "class_prefix": "BiomePoints",
+        "camel_prefix": "biomePoints",
+        "pascal_prefix": "BiomePoints",
+        "const_prefix": "BIOME_POINTS",
         "dimensions": 2,
         "point_sparsity": 24,
         "point_data": "BiomeLocalPoint", # This type must be defined manually.
         "routine": "BiomePointRoutine.cs"
     },
     "biome_compositions": {
-        "class_prefix": "BiomeCompositions",
+        "camel_prefix": "biomePoints",
+        "pascal_prefix": "BiomeCompositions",
+        "const_prefix": "BIOME_COMPOSITIONS",
         "dimensions": 2,
         "point_sparsity": 1,
         "dependencies": {
             "biome_points": {
                 "dependency_range": 64
-            }    
+            }
         },
         "point_data": "BiomeComposition",
         "routine": "BiomeCompositionRoutine.cs"
     },
     "hill_points": {
-        "class_prefix": "HillPoints",
+        "camel_prefix": "hillPoints",
+        "pascal_prefix": "HillPoints",
+        "const_prefix": "HILL_POINTS",
         "dimensions": 2,
         "point_sparsity": 24,
         "dependencies": {
@@ -33,7 +40,9 @@ LAYERS = {
         "point_data": "int"
     },
     "altitudes": {
-        "class_prefix": "Altitudes",
+        "camel_prefix": "altitudes",
+        "pascal_prefix": "Altitudes",
+        "const_prefix": "ALTITUDES",
         "dimensions": 2,
         "point_sparsity": 1,
         "dependencies": {
@@ -44,7 +53,9 @@ LAYERS = {
         "point_data": "int"
     },
     "terrain": {
-        "class_prefix": "Terrain",
+        "camel_prefix": "terrain",
+        "pascal_prefix": "Terrain",
+        "const_prefix": "TERRAIN",
         "dimensions": 3,
         "point_sparsity": 1,
         "dependencies": {

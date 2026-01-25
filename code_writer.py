@@ -6,7 +6,7 @@ ROUTINES_DIR = 'Routines'
 
 class CodeWriter:
     def __init__(self, layer, file_name):
-        directory = os.path.join(OUTPUT_DIR, layer['class_prefix'])
+        directory = os.path.join(OUTPUT_DIR, layer['pascal_prefix'])
         os.makedirs(directory, exist_ok=True)
         self.f = open(os.path.join(directory, file_name), mode='w', encoding='utf-8')
         self.f.write(GENERAL_HEADER)
@@ -33,7 +33,7 @@ class CodeWriter:
     # Create a closing brace and shift left.
     def close_func(self):
         self.shift_left()
-        self.put("}\n\n")
+        self.put("}\n")
 
     # Load all code from a separate file into this file.
     def load_routine(self, routine):

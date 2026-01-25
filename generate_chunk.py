@@ -4,7 +4,7 @@ from settings import CHUNK_WIDTH, LAYERS
 # Generate the chunk struct for a layer (stores data for a portion of the world).
 def generate_chunk(layer_name):
     layer = LAYERS[layer_name]
-    class_name = layer["class_prefix"] + "Chunk"
+    class_name = layer["pascal_prefix"] + "Chunk"
     point_name = layer["point_data"]
 
     w = CodeWriter(layer, class_name + ".cs")
