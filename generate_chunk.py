@@ -20,9 +20,8 @@ def generate_chunk(layer_name):
     w.open_func()
 
     # Fields
-    # TODO: If point sparsity is 1, store points in a tightly-packed NativeArray for quick lookup.
-    # Otherwise, store points in a list for quick traversal of non-null points.
-    w.put("public NativeList<" + point_name + "> points;\n")
+    # TODO: If sparsity is 1, use an array instead of a hash map
+    w.put("public NativeHashMap<int" + str(layer["dimensions"]) + ", " + point_name + "> points;\n")
     w.put("public NativeReference<bool> isGenerated;\n")
     w.put("\n")
 
@@ -36,7 +35,7 @@ def generate_chunk(layer_name):
     w.open_func()
     w.put("chunk = new " + class_name + "\n")
     w.open_func()
-    w.put("points = new(10, Allocator.Persistent),\n")
+    w.put("points = new(100, Allocator.Persistent),\n")
     w.put("isGenerated = false\n")
     w.shift_left()
     w.put("};\n")

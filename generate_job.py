@@ -21,7 +21,7 @@ def generate_job(layer_name):
     w.open_func()
 
     # Fields
-    w.put("public " + layer["pascal_prefix"] + "Chunk chunkData;\n")
+    w.put("public " + layer["pascal_prefix"] + "Chunk chunk;\n")
     w.put("[ReadOnly] public int chunkX;\n")
     w.put("[ReadOnly] public int chunkY;\n")
     if (layer["dimensions"] == 3):
@@ -102,7 +102,7 @@ def generate_job(layer_name):
     w.shift_right()
 
     # Skip if already generated
-    w.put("if (chunkData.isGenerated.Value) return;\n")
+    w.put("if (chunk.isGenerated.Value) return;\n")
     w.put("\n")
 
     # Fetch points from dependency chunks
@@ -131,7 +131,7 @@ def generate_job(layer_name):
             w.put(LAYERS[dependency]["camel_prefix"] + ".Dispose();\n")
 
     # Finish job
-    w.put("chunkData.isGenerated.Value = true;\n")
+    w.put("chunk.isGenerated.Value = true;\n")
     w.close_func()
     w.close_func()
 
