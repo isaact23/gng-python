@@ -13,7 +13,7 @@ LAYERS = {
         "routine": "BiomePointRoutine.cs"
     },
     "biome_compositions": {
-        "camel_prefix": "biomePoints",
+        "camel_prefix": "biomeCompositions",
         "pascal_prefix": "BiomeCompositions",
         "const_prefix": "BIOME_COMPOSITIONS",
         "dimensions": 2,
@@ -37,7 +37,8 @@ LAYERS = {
                 "dependency_range": 0
             }    
         },
-        "point_data": "int"
+        "point_data": "int",
+        "routine": "HillPointRoutine.cs"
     },
     "altitudes": {
         "camel_prefix": "altitudes",
@@ -50,7 +51,8 @@ LAYERS = {
                 "dependency_range": 64
             }    
         },
-        "point_data": "int"
+        "point_data": "int",
+        "routine": "AltitudesRoutine.cs"
     },
     "terrain": {
         "camel_prefix": "terrain",
@@ -66,6 +68,7 @@ LAYERS = {
                 "dependency_range": 0
             }
         },
-        "point_data": "Block"
+        "point_data": "Block",
+        "routine": "TerrainRoutine.cs"
     }
 }

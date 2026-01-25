@@ -22,6 +22,6 @@ def generate_code():
         generate_layer(layer_name)
 
 if __name__ == "__main__":
-    #generate_code()
-    generate_layer("biome_points")
-    generate_layer("biome_compositions")
+    generate_code()
+    #generate_layer("biome_points")
+    #generate_layer("biome_compositions")
