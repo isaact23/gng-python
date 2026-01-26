@@ -12,6 +12,7 @@ def generate_chunk(layer_name):
     # Includes
     w.put("using Unity.Burst;\n")
     w.put("using Unity.Collections;\n")
+    w.put("using Unity.Mathematics;\n")
     w.put("\n")
 
     # Struct definition
@@ -36,7 +37,7 @@ def generate_chunk(layer_name):
     w.put("chunk = new " + class_name + "\n")
     w.open_func()
     w.put("points = new(100, Allocator.Persistent),\n")
-    w.put("isGenerated = false\n")
+    w.put("isGenerated = new NativeReference<bool>(Allocator.Persistent)\n")
     w.shift_left()
     w.put("};\n")
     w.close_func()
@@ -47,6 +48,7 @@ def generate_chunk(layer_name):
     w.put("public static void Dispose(in " + class_name + " chunk)\n")
     w.open_func()
     w.put("chunk.points.Dispose();\n")
+    w.put("chunk.isGenerated.Dispose();\n")
     w.close_func()
 
     w.close_func()

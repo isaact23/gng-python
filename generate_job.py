@@ -69,7 +69,7 @@ def generate_job(layer_name):
             w.put("[BurstCompile]\n")
             w.put("public static void Add" + chunk_name + "(ref " + class_name + " job, " + chunk_name + " chunk, " + "in int2 chunkPos)\n")
             w.open_func()
-            w.put("job." + array_name + "[Get" + LAYERS[dependency]["pascal_prefix"] + "Index(chunkPos)] = chunk;\n")
+            w.put("job." + array_name + "[Get" + LAYERS[dependency]["pascal_prefix"] + "Index(new int2(job.chunkX, job.chunkY))] = chunk;\n")
             w.close_func()
             w.put("\n")
 
@@ -87,7 +87,7 @@ def generate_job(layer_name):
             w.put("private static void Fetch" + LAYERS[dependency]["pascal_prefix"] + "From(ref " + class_name + " job, " +
                 "ref NativeHashMap<" + int_type + ", " + point_name + "> localPoints, in " + int_type + " offset)\n")
             w.open_func()
-            w.put(chunk_name + " chunk = job." + array_name + "[Get" + LAYERS[dependency]["pascal_prefix"] + "Index(chunkPos)] = chunk;\n")
+            w.put(chunk_name + " chunk = job." + array_name + "[Get" + LAYERS[dependency]["pascal_prefix"] + "Index(new int2(job.chunkX, job.chunkY))];\n")
             w.put("NativeArray<" + int_type + "> positions = chunk.points.GetKeyArray(Allocator.TempJob);\n")
             w.put("\n")
 
