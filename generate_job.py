@@ -22,6 +22,11 @@ def generate_job(layer_name):
 
     # Fields
     w.put("public " + layer["pascal_prefix"] + "Chunk chunk;\n")
+    if "dependencies" in layer:
+        for dependency in layer["dependencies"]:
+            chunk_name = LAYERS[dependency]["pascal_prefix"] + "Chunk"
+            array_name = LAYERS[dependency]["camel_prefix"] + "Chunks"
+            w.put("[ReadOnly] public NativeArray<" + chunk_name + "> " + array_name + ";\n")
     w.put("[ReadOnly] public int chunkX;\n")
     w.put("[ReadOnly] public int chunkY;\n")
     if (layer["dimensions"] == 3):

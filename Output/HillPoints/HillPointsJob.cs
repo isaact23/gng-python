@@ -9,6 +9,7 @@ using Unity.Mathematics;
 public struct HillPointsJob : IJob
 {
     public HillPointsChunk chunk;
+    [ReadOnly] public NativeArray<BiomeCompositionsChunk> biomeCompositionsChunks;
     [ReadOnly] public int chunkX;
     [ReadOnly] public int chunkY;
     [ReadOnly] public int seed;
