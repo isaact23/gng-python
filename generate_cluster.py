@@ -1,3 +1,4 @@
+from math import ceil
 from code_writer import *
 from settings import CHUNK_WIDTH, LAYERS
 
@@ -37,6 +38,21 @@ def generate_cluster(layer_name):
 
     # Constants
     w.put("private const int CHUNK_WIDTH = " + str(CHUNK_WIDTH) + ";\n")
+
+    # Constant chunk dependency ranges
+    # TODO: Remove redundancy between this and generate_job.py
+    dependency_range_consts = {}
+    if "dependencies" in layer:
+        for dependency in layer["dependencies"]:
+            block_range = layer["dependencies"][dependency]["dependency_range"]
+            chunk_range = ceil(block_range / CHUNK_WIDTH)
+            dependency_prefix = LAYERS[dependency]["const_prefix"]
+            const_name = dependency_prefix + "_CHUNK_RANGE"
+            w.put("private const int " + const_name + " = " + str(chunk_range) + ";\n")
+            dependency_range_consts[dependency] = {
+                "variable": const_name,
+                "value": chunk_range
+            }
     w.put("\n")
 
     # Initialization routine
@@ -101,13 +117,29 @@ def generate_cluster(layer_name):
     w.put(job_name + " job = new " + job_name + "\n")
     w.open_func()
     w.put("chunk = chunk,\n")
+
+    # Set up dependency arrays
+    if "dependencies" in layer:
+        for dependency in layer["dependencies"]:
+            chunk_name = LAYERS[dependency]["pascal_prefix"] + "Chunk"
+            array_name = LAYERS[dependency]["camel_prefix"] + "Chunks"
+            chunk_dep_radius = dependency_range_consts[dependency]["value"]
+            chunk_dep_diameter = (chunk_dep_radius * 2 + 1) ** 2
+            w.put(array_name + " = new NativeArray<" + chunk_name + ">(" + str(chunk_dep_diameter) + ", Allocator.Persistent);\n")
+            
     w.put("chunkX = chunkPos.x,\n")
     w.put("chunkY = chunkPos.y,\n")
-    if (layer["dimensions"] == 3):
+    if layer["dimensions"] == 3:
         w.put("chunkZ = chunkPos.z,\n")
     w.put("seed = cluster.seed\n")
+    
     w.close_func()
     w.put("\n")
+    
+    # Schedule dependency generation and populate dependencies
+    if "dependencies" in layer:
+        for dependency in layer["dependencies"]:
+            pass
 
     w.put("handle = job.Schedule();\n")
     w.put("cluster.jobs[chunkPos] = handle;\n")

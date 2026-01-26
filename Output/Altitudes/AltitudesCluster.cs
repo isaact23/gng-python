@@ -16,6 +16,7 @@ public struct AltitudesCluster
     private int seed;
     
     private const int CHUNK_WIDTH = 32;
+    private const int HILL_POINTS_CHUNK_RANGE = 2;
     
     [BurstCompile]
     public static void Initialize(int seed, out AltitudesCluster cluster)
@@ -66,6 +67,7 @@ public struct AltitudesCluster
         AltitudesJob job = new AltitudesJob
         {
             chunk = chunk,
+            hillPointsChunks = new NativeArray<HillPointsChunk>(25, Allocator.Persistent);
             chunkX = chunkPos.x,
             chunkY = chunkPos.y,
             seed = cluster.seed
@@ -81,10 +83,10 @@ public struct AltitudesCluster
     {
         if (cluster.chunks.Count > 0)
         {
-            NativeArray<AltitudesChunk> chunksToDispose = cluster.chunks.GetValueArray(Allocator.Temp);
-            foreach (AltitudesChunk chunk in chunksToDispose)
+            NativeArray<HillPointsChunk> chunksToDispose = cluster.chunks.GetValueArray(Allocator.Temp);
+            foreach (HillPointsChunk chunk in chunksToDispose)
             {
-                AltitudesChunk.Dispose(chunk);
+                HillPointsChunk.Dispose(chunk);
             }
             chunksToDispose.Dispose();
         }

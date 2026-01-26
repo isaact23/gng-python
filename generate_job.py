@@ -75,7 +75,7 @@ def generate_job(layer_name):
 
             # Helper method gets index of a chunk in the dependency array
             w.put("[BurstCompile]\n")
-            w.put("private static int Get" + LAYERS[dependency]["pascal_prefix"] + "Index(in int2 chunkPos)\n")
+            w.put("public static int Get" + LAYERS[dependency]["pascal_prefix"] + "Index(in int2 chunkPos)\n")
             w.open_func()
             dep_range = dependency_range_consts[dependency]["value"]
             w.put("return (chunkPos.x + " + str(dep_range) + ") + ((chunkPos.y + " + str(dep_range) + ") * " + str(1 + (dep_range * 2)) + ");\n")

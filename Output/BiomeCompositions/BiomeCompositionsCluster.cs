@@ -16,6 +16,7 @@ public struct BiomeCompositionsCluster
     private int seed;
     
     private const int CHUNK_WIDTH = 32;
+    private const int BIOME_POINTS_CHUNK_RANGE = 2;
     
     [BurstCompile]
     public static void Initialize(int seed, out BiomeCompositionsCluster cluster)
@@ -66,6 +67,7 @@ public struct BiomeCompositionsCluster
         BiomeCompositionsJob job = new BiomeCompositionsJob
         {
             chunk = chunk,
+            biomePointsChunks = new NativeArray<BiomePointsChunk>(25, Allocator.Persistent);
             chunkX = chunkPos.x,
             chunkY = chunkPos.y,
             seed = cluster.seed
@@ -81,10 +83,10 @@ public struct BiomeCompositionsCluster
     {
         if (cluster.chunks.Count > 0)
         {
-            NativeArray<BiomeCompositionsChunk> chunksToDispose = cluster.chunks.GetValueArray(Allocator.Temp);
-            foreach (BiomeCompositionsChunk chunk in chunksToDispose)
+            NativeArray<BiomePointsChunk> chunksToDispose = cluster.chunks.GetValueArray(Allocator.Temp);
+            foreach (BiomePointsChunk chunk in chunksToDispose)
             {
-                BiomeCompositionsChunk.Dispose(chunk);
+                BiomePointsChunk.Dispose(chunk);
             }
             chunksToDispose.Dispose();
         }

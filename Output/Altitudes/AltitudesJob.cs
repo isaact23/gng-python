@@ -24,7 +24,7 @@ public struct AltitudesJob : IJob
     }
     
     [BurstCompile]
-    private static int GetHillPointsIndex(in int2 chunkPos)
+    public static int GetHillPointsIndex(in int2 chunkPos)
     {
         return (chunkPos.x + 2) + ((chunkPos.y + 2) * 5);
     }

@@ -16,6 +16,8 @@ public struct TerrainCluster
     private int seed;
     
     private const int CHUNK_WIDTH = 32;
+    private const int BIOME_COMPOSITIONS_CHUNK_RANGE = 0;
+    private const int ALTITUDES_CHUNK_RANGE = 0;
     
     [BurstCompile]
     public static void Initialize(int seed, out TerrainCluster cluster)
@@ -66,6 +68,8 @@ public struct TerrainCluster
         TerrainJob job = new TerrainJob
         {
             chunk = chunk,
+            biomeCompositionsChunks = new NativeArray<BiomeCompositionsChunk>(1, Allocator.Persistent);
+            altitudesChunks = new NativeArray<AltitudesChunk>(1, Allocator.Persistent);
             chunkX = chunkPos.x,
             chunkY = chunkPos.y,
             chunkZ = chunkPos.z,
@@ -82,10 +86,10 @@ public struct TerrainCluster
     {
         if (cluster.chunks.Count > 0)
         {
-            NativeArray<TerrainChunk> chunksToDispose = cluster.chunks.GetValueArray(Allocator.Temp);
-            foreach (TerrainChunk chunk in chunksToDispose)
+            NativeArray<AltitudesChunk> chunksToDispose = cluster.chunks.GetValueArray(Allocator.Temp);
+            foreach (AltitudesChunk chunk in chunksToDispose)
             {
-                TerrainChunk.Dispose(chunk);
+                AltitudesChunk.Dispose(chunk);
             }
             chunksToDispose.Dispose();
         }

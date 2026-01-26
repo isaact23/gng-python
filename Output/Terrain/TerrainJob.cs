@@ -27,7 +27,7 @@ public struct TerrainJob : IJob
     }
     
     [BurstCompile]
-    private static int GetBiomeCompositionsIndex(in int2 chunkPos)
+    public static int GetBiomeCompositionsIndex(in int2 chunkPos)
     {
         return (chunkPos.x + 0) + ((chunkPos.y + 0) * 1);
     }
@@ -57,7 +57,7 @@ public struct TerrainJob : IJob
     }
     
     [BurstCompile]
-    private static int GetAltitudesIndex(in int2 chunkPos)
+    public static int GetAltitudesIndex(in int2 chunkPos)
     {
         return (chunkPos.x + 0) + ((chunkPos.y + 0) * 1);
     }

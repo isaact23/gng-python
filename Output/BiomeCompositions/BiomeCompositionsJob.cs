@@ -24,7 +24,7 @@ public struct BiomeCompositionsJob : IJob
     }
     
     [BurstCompile]
-    private static int GetBiomePointsIndex(in int2 chunkPos)
+    public static int GetBiomePointsIndex(in int2 chunkPos)
     {
         return (chunkPos.x + 2) + ((chunkPos.y + 2) * 5);
     }
