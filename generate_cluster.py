@@ -86,7 +86,7 @@ def generate_cluster(layer_name):
     w.put("[BurstCompile]\n")
     w.put("public static bool DidFinishGeneratingChunk(ref " + class_name + " cluster, " + vec_type + " chunkPos)\n")
     w.open_func()
-    w.put("return cluster.chunks.TryGetValue(chunkPos, out " + chunk_name + " chunk) && chunk.isGenerated;\n")
+    w.put("return cluster.chunks.TryGetValue(chunkPos, out " + chunk_name + " chunk) && chunk.isGenerated.Value;\n")
     w.close_func()
     w.put("\n")
 
@@ -100,7 +100,7 @@ def generate_cluster(layer_name):
 
     # Chunk setter method
     w.put("[BurstCompile]\n")
-    w.put("public static " + chunk_name + " SetChunk(ref " + class_name + " cluster, " + vec_type + " chunkPos, " + chunk_name + " chunk)\n")
+    w.put("public static void SetChunk(ref " + class_name + " cluster, " + vec_type + " chunkPos, " + chunk_name + " chunk)\n")
     w.open_func()
     w.put("cluster.chunks[chunkPos] = chunk;\n");
     w.close_func()
@@ -129,7 +129,7 @@ def generate_cluster(layer_name):
         array_name = LAYERS[dependency]["camel_prefix"] + "Chunks"
         chunk_dep_radius = dependency_range_consts[dependency]["value"]
         chunk_dep_diameter = (chunk_dep_radius * 2 + 1) ** 2
-        w.put(array_name + " = new NativeArray<" + chunk_name + ">(" + str(chunk_dep_diameter) + ", Allocator.Persistent);\n")
+        w.put(array_name + " = new NativeArray<" + chunk_name + ">(" + str(chunk_dep_diameter) + ", Allocator.Persistent),\n")
             
     w.put("chunkX = chunkPos.x,\n")
     w.put("chunkY = chunkPos.y,\n")
@@ -137,7 +137,8 @@ def generate_cluster(layer_name):
         w.put("chunkZ = chunkPos.z,\n")
     w.put("seed = cluster.seed\n")
     
-    w.close_func()
+    w.shift_left()
+    w.put("};\n")
     w.put("\n")
     
     # Schedule dependency generation and populate dependencies
@@ -146,7 +147,7 @@ def generate_cluster(layer_name):
             raise NotImplementedError("Three-dimensional dependency detected - this case is not handled yet")
             
     if len(layer["dependencies"]) > 0:
-        w.put("NativeList<JobHandle> handles = new NativeList(20, Allocator.Persistent);\n")
+        w.put("NativeList<JobHandle> handles = new(20, Allocator.Persistent);\n")
     for dependency in layer["dependencies"]:
         dim = LAYERS[dependency]["dimensions"]
         dep_radius = dependency_range_consts[dependency]["value"]
@@ -168,19 +169,22 @@ def generate_cluster(layer_name):
             w.put("int3 globalPos = new int3(globalX, globalY, globalZ);\n")
         w.put("\n")
 
-        w.put("if (" + cluster_class + ".GenerateChunk(ref " + cluster_name + ", globalPos, out JobHandle handle))\n")
+        w.put("if (" + cluster_class + ".GenerateChunk(ref cluster." + cluster_name + ", globalPos, out JobHandle innerHandle))\n")
         w.open_func()
-        w.put("handles.Add(handle);\n")
+        w.put("handles.Add(innerHandle);\n")
         w.close_func()
 
         w.put("job." + array_name + "[" + layer["pascal_prefix"] + "Job.Get" + LAYERS[dependency]["pascal_prefix"] + "Index(globalPos)] = \n")
-        w.put("    " + cluster_class + ".GetChunk(ref " + cluster_name + ", globalPos);\n")
+        w.put("    " + cluster_class + ".GetChunk(ref cluster." + cluster_name + ", globalPos);\n")
 
         w.close_func()
         w.close_func()
-
-    w.put("handle = job.Schedule(handles);\n")
-    if len(layer["dependencies"]) > 0:
+    
+    if len(layer["dependencies"]) == 0:
+        w.put("handle = job.Schedule()")
+    else:
+        w.put("JobHandle combinedDeps = JobHandle.CombineDependencies(handles.AsArray());\n")
+        w.put("handle = job.Schedule(combinedDeps);\n")
         w.put("handles.Dispose();\n")
     w.put("cluster.jobs[chunkPos] = handle;\n")
     w.put("return true;\n")
@@ -193,10 +197,10 @@ def generate_cluster(layer_name):
     w.open_func()
     w.put("if (cluster.chunks.Count > 0)\n")
     w.open_func()
-    w.put("NativeArray<" + chunk_name + "> chunksToDispose = cluster.chunks.GetValueArray(Allocator.Temp);\n")
-    w.put("foreach (" + chunk_name + " chunk in chunksToDispose)\n")
+    w.put("NativeArray<" + layer["pascal_prefix"] + "Chunk> chunksToDispose = cluster.chunks.GetValueArray(Allocator.Temp);\n")
+    w.put("foreach (" + layer["pascal_prefix"] + "Chunk chunk in chunksToDispose)\n")
     w.open_func()
-    w.put(chunk_name + ".Dispose(chunk);\n")
+    w.put(layer["pascal_prefix"] + "Chunk.Dispose(chunk);\n")
     w.close_func()
     w.put("chunksToDispose.Dispose();\n")
     w.close_func()

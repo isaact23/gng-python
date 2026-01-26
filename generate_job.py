@@ -102,11 +102,11 @@ def generate_job(layer_name):
             w.put(int_type + " pos = positions[i];\n")
 
             if dim == 2:
-                w.put(int_type + " adjustedPos = new " + int_type + "(chunkX * CHUNK_WIDTH, chunkY * CHUNK_WIDTH)\n")
+                w.put(int_type + " adjustedPos = new " + int_type + "(chunkX * CHUNK_WIDTH, chunkY * CHUNK_WIDTH);\n")
             else:
-                w.put(int_type + " adjustedPos = new " + int_type + "(chunkX * CHUNK_WIDTH, chunkY * CHUNK_WIDTH, chunkZ * CHUNK_WIDTH)\n")
+                w.put(int_type + " adjustedPos = new " + int_type + "(chunkX * CHUNK_WIDTH, chunkY * CHUNK_WIDTH, chunkZ * CHUNK_WIDTH);\n")
 
-            w.put("localPoints.Add(adjustedPos, point);\n")
+            w.put("localPoints.Add(adjustedPos, chunk.points[pos]);\n")
             w.close_func()
             w.put("positions.Dispose();\n")
             w.close_func()
