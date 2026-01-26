@@ -11,6 +11,8 @@ using UnityEngine;
 [BurstCompile]
 public struct TerrainCluster
 {
+    [ReadOnly] public BiomeCompositionsCluster biomeCompositionsCluster;
+    [ReadOnly] public AltitudesCluster altitudesCluster;
     private NativeHashMap<int3, TerrainChunk> chunks;
     private NativeHashMap<int3, JobHandle> jobs;
     private int seed;
@@ -76,7 +78,41 @@ public struct TerrainCluster
             seed = cluster.seed
         }
         
-        handle = job.Schedule();
+        NativeList<JobHandle> handles = new NativeList(20, Allocator.Persistent);
+        for (int x = -0; x <= 0; x++)
+        {
+            for (int y = -0; y <= 0; y++)
+            {
+                int globalX = chunkPos.x + x;
+                int globalY = chunkPos.y + y;
+                int2 globalPos = new int2(globalX, globalY);
+                
+                if (BiomeCompositionsCluster.GenerateChunk(ref biomeCompositionsCluster, globalPos, out JobHandle handle))
+                {
+                    handles.Add(handle);
+                }
+                job.biomeCompositionsChunks[TerrainJob.GetBiomeCompositionsIndex(globalPos)] = 
+                    BiomeCompositionsCluster.GetChunk(ref biomeCompositionsCluster, globalPos);
+            }
+        }
+        for (int x = -0; x <= 0; x++)
+        {
+            for (int y = -0; y <= 0; y++)
+            {
+                int globalX = chunkPos.x + x;
+                int globalY = chunkPos.y + y;
+                int2 globalPos = new int2(globalX, globalY);
+                
+                if (AltitudesCluster.GenerateChunk(ref altitudesCluster, globalPos, out JobHandle handle))
+                {
+                    handles.Add(handle);
+                }
+                job.altitudesChunks[TerrainJob.GetAltitudesIndex(globalPos)] = 
+                    AltitudesCluster.GetChunk(ref altitudesCluster, globalPos);
+            }
+        }
+        handle = job.Schedule(handles);
+        handles.Dispose();
         cluster.jobs[chunkPos] = handle;
         return true;
     }

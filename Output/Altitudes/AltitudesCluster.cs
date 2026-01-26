@@ -11,6 +11,7 @@ using UnityEngine;
 [BurstCompile]
 public struct AltitudesCluster
 {
+    [ReadOnly] public HillPointsCluster hillPointsCluster;
     private NativeHashMap<int2, AltitudesChunk> chunks;
     private NativeHashMap<int2, JobHandle> jobs;
     private int seed;
@@ -73,7 +74,25 @@ public struct AltitudesCluster
             seed = cluster.seed
         }
         
-        handle = job.Schedule();
+        NativeList<JobHandle> handles = new NativeList(20, Allocator.Persistent);
+        for (int x = -2; x <= 2; x++)
+        {
+            for (int y = -2; y <= 2; y++)
+            {
+                int globalX = chunkPos.x + x;
+                int globalY = chunkPos.y + y;
+                int2 globalPos = new int2(globalX, globalY);
+                
+                if (HillPointsCluster.GenerateChunk(ref hillPointsCluster, globalPos, out JobHandle handle))
+                {
+                    handles.Add(handle);
+                }
+                job.hillPointsChunks[AltitudesJob.GetHillPointsIndex(globalPos)] = 
+                    HillPointsCluster.GetChunk(ref hillPointsCluster, globalPos);
+            }
+        }
+        handle = job.Schedule(handles);
+        handles.Dispose();
         cluster.jobs[chunkPos] = handle;
         return true;
     }

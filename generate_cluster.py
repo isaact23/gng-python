@@ -31,6 +31,11 @@ def generate_cluster(layer_name):
     w.open_func()
 
     # Fields
+    for dependency in layer["dependencies"]:
+        cluster_class = LAYERS[dependency]["pascal_prefix"] + "Cluster"
+        cluster_name = LAYERS[dependency]["camel_prefix"] + "Cluster"
+        w.put("[ReadOnly] public " + cluster_class + " " + cluster_name + ";\n")
+
     w.put("private NativeHashMap<" + vec_type + ", " + chunk_name + "> chunks;\n")
     w.put("private NativeHashMap<" + vec_type + ", JobHandle> jobs;\n")
     w.put("private int seed;\n")
@@ -119,13 +124,12 @@ def generate_cluster(layer_name):
     w.put("chunk = chunk,\n")
 
     # Set up dependency arrays
-    if "dependencies" in layer:
-        for dependency in layer["dependencies"]:
-            chunk_name = LAYERS[dependency]["pascal_prefix"] + "Chunk"
-            array_name = LAYERS[dependency]["camel_prefix"] + "Chunks"
-            chunk_dep_radius = dependency_range_consts[dependency]["value"]
-            chunk_dep_diameter = (chunk_dep_radius * 2 + 1) ** 2
-            w.put(array_name + " = new NativeArray<" + chunk_name + ">(" + str(chunk_dep_diameter) + ", Allocator.Persistent);\n")
+    for dependency in layer["dependencies"]:
+        chunk_name = LAYERS[dependency]["pascal_prefix"] + "Chunk"
+        array_name = LAYERS[dependency]["camel_prefix"] + "Chunks"
+        chunk_dep_radius = dependency_range_consts[dependency]["value"]
+        chunk_dep_diameter = (chunk_dep_radius * 2 + 1) ** 2
+        w.put(array_name + " = new NativeArray<" + chunk_name + ">(" + str(chunk_dep_diameter) + ", Allocator.Persistent);\n")
             
     w.put("chunkX = chunkPos.x,\n")
     w.put("chunkY = chunkPos.y,\n")
@@ -137,11 +141,47 @@ def generate_cluster(layer_name):
     w.put("\n")
     
     # Schedule dependency generation and populate dependencies
-    if "dependencies" in layer:
-        for dependency in layer["dependencies"]:
-            pass
+    for dependency in layer["dependencies"]:
+        if LAYERS[dependency]["dimensions"] > 2:
+            raise NotImplementedError("Three-dimensional dependency detected - this case is not handled yet")
+            
+    if len(layer["dependencies"]) > 0:
+        w.put("NativeList<JobHandle> handles = new NativeList(20, Allocator.Persistent);\n")
+    for dependency in layer["dependencies"]:
+        dim = LAYERS[dependency]["dimensions"]
+        dep_radius = dependency_range_consts[dependency]["value"]
+        cluster_class = LAYERS[dependency]["pascal_prefix"] + "Cluster"
+        cluster_name = LAYERS[dependency]["camel_prefix"] + "Cluster"
+        array_name = LAYERS[dependency]["camel_prefix"] + "Chunks"
+        job_class = LAYERS[dependency]["pascal_prefix"] + "Job"
 
-    w.put("handle = job.Schedule();\n")
+        w.put("for (int x = -" + str(dep_radius) + "; x <= " + str(dep_radius) + "; x++)\n")
+        w.open_func()
+        w.put("for (int y = -" + str(dep_radius) + "; y <= " + str(dep_radius) + "; y++)\n")
+        w.open_func()
+        w.put("int globalX = chunkPos.x + x;\n")
+        w.put("int globalY = chunkPos.y + y;\n")
+        if (dim == 2):
+            w.put("int2 globalPos = new int2(globalX, globalY);\n")
+        else:
+            w.put("int globalZ = chunkPos.z + z;\n")
+            w.put("int3 globalPos = new int3(globalX, globalY, globalZ);\n")
+        w.put("\n")
+
+        w.put("if (" + cluster_class + ".GenerateChunk(ref " + cluster_name + ", globalPos, out JobHandle handle))\n")
+        w.open_func()
+        w.put("handles.Add(handle);\n")
+        w.close_func()
+
+        w.put("job." + array_name + "[" + layer["pascal_prefix"] + "Job.Get" + LAYERS[dependency]["pascal_prefix"] + "Index(globalPos)] = \n")
+        w.put("    " + cluster_class + ".GetChunk(ref " + cluster_name + ", globalPos);\n")
+
+        w.close_func()
+        w.close_func()
+
+    w.put("handle = job.Schedule(handles);\n")
+    if len(layer["dependencies"]) > 0:
+        w.put("handles.Dispose();\n")
     w.put("cluster.jobs[chunkPos] = handle;\n")
     w.put("return true;\n")
     w.close_func()

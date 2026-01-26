@@ -33,7 +33,7 @@ public struct AltitudesJob : IJob
     private static void FetchHillPointsFrom(ref AltitudesJob job, ref NativeHashMap<int2, int> localPoints, in int2 offset)
     {
         HillPointsChunk chunk = job.hillPointsChunks[GetHillPointsIndex(chunkPos)] = chunk;
-        NativeArray<int2> positions = chunk.points.GetKeyArray(Allocator.Temp);
+        NativeArray<int2> positions = chunk.points.GetKeyArray(Allocator.TempJob);
         
         int chunkX = job.chunkX + offset.x;
         int chunkY = job.chunkY + offset.y;
@@ -53,9 +53,9 @@ public struct AltitudesJob : IJob
         if (chunk.isGenerated.Value) return;
         
         NativeHashMap<int2, int> hillPoints = new(100, Allocator.TempJob);
-        for (int x = -2; x < 2; x++)
+        for (int x = -2; x <= 2; x++)
         {
-            for (int y = -2; y < 2; y++)
+            for (int y = -2; y <= 2; y++)
             {
                 FetchHillPointsFrom(ref this, ref hillPoints, new int2(x, y));
             }
@@ -63,6 +63,8 @@ public struct AltitudesJob : IJob
         
         /* Partial routine - injected into job script by source generator */        
         hillPoints.Dispose();
+        hillPointsChunks.Dispose();
+        
         chunk.isGenerated.Value = true;
     }
 }

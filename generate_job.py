@@ -88,7 +88,7 @@ def generate_job(layer_name):
                 "ref NativeHashMap<" + int_type + ", " + point_name + "> localPoints, in " + int_type + " offset)\n")
             w.open_func()
             w.put(chunk_name + " chunk = job." + array_name + "[Get" + LAYERS[dependency]["pascal_prefix"] + "Index(chunkPos)] = chunk;\n")
-            w.put("NativeArray<" + int_type + "> positions = chunk.points.GetKeyArray(Allocator.Temp);\n")
+            w.put("NativeArray<" + int_type + "> positions = chunk.points.GetKeyArray(Allocator.TempJob);\n")
             w.put("\n")
 
             w.put("int chunkX = job.chunkX + offset.x;\n")
@@ -131,9 +131,9 @@ def generate_job(layer_name):
             int_type = "int" + str(dim)
 
             w.put("NativeHashMap<" + int_type + ", " + point_name + "> " + LAYERS[dependency]["camel_prefix"] + " = new(100, Allocator.TempJob);\n")
-            w.put("for (int x = -" + str(dep_range) + "; x < " + str(dep_range) + "; x++)\n")
+            w.put("for (int x = -" + str(dep_range) + "; x <= " + str(dep_range) + "; x++)\n")
             w.open_func()
-            w.put("for (int y = -" + str(dep_range) + "; y < " + str(dep_range) + "; y++)\n")
+            w.put("for (int y = -" + str(dep_range) + "; y <= " + str(dep_range) + "; y++)\n")
             w.open_func()
             w.put("Fetch" + LAYERS[dependency]["pascal_prefix"] + "From(ref this, ref " + LAYERS[dependency]["camel_prefix"] + ", new int2(x, y));\n")
             w.close_func()
@@ -145,9 +145,10 @@ def generate_job(layer_name):
     w.put("\n")
 
     # Dispose of dependency data
-    if "dependencies" in layer:
-        for dependency in layer["dependencies"]:
-            w.put(LAYERS[dependency]["camel_prefix"] + ".Dispose();\n")
+    for dependency in layer["dependencies"]:
+        w.put(LAYERS[dependency]["camel_prefix"] + ".Dispose();\n")
+        w.put(LAYERS[dependency]["camel_prefix"] + "Chunks.Dispose();\n")
+    w.put("\n")
 
     # Finish job
     w.put("chunk.isGenerated.Value = true;\n")

@@ -71,7 +71,7 @@ public struct BiomePointsCluster
             seed = cluster.seed
         }
         
-        handle = job.Schedule();
+        handle = job.Schedule(handles);
         cluster.jobs[chunkPos] = handle;
         return true;
     }

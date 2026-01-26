@@ -11,6 +11,7 @@ using UnityEngine;
 [BurstCompile]
 public struct HillPointsCluster
 {
+    [ReadOnly] public BiomeCompositionsCluster biomeCompositionsCluster;
     private NativeHashMap<int2, HillPointsChunk> chunks;
     private NativeHashMap<int2, JobHandle> jobs;
     private int seed;
@@ -73,7 +74,25 @@ public struct HillPointsCluster
             seed = cluster.seed
         }
         
-        handle = job.Schedule();
+        NativeList<JobHandle> handles = new NativeList(20, Allocator.Persistent);
+        for (int x = -0; x <= 0; x++)
+        {
+            for (int y = -0; y <= 0; y++)
+            {
+                int globalX = chunkPos.x + x;
+                int globalY = chunkPos.y + y;
+                int2 globalPos = new int2(globalX, globalY);
+                
+                if (BiomeCompositionsCluster.GenerateChunk(ref biomeCompositionsCluster, globalPos, out JobHandle handle))
+                {
+                    handles.Add(handle);
+                }
+                job.biomeCompositionsChunks[HillPointsJob.GetBiomeCompositionsIndex(globalPos)] = 
+                    BiomeCompositionsCluster.GetChunk(ref biomeCompositionsCluster, globalPos);
+            }
+        }
+        handle = job.Schedule(handles);
+        handles.Dispose();
         cluster.jobs[chunkPos] = handle;
         return true;
     }

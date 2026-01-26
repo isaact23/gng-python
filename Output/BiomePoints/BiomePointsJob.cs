@@ -67,6 +67,7 @@ public struct BiomePointsJob : IJob
         
         pointPositions.Dispose();
         
+        
         chunk.isGenerated.Value = true;
     }
 }

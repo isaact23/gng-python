@@ -33,7 +33,7 @@ public struct BiomeCompositionsJob : IJob
     private static void FetchBiomePointsFrom(ref BiomeCompositionsJob job, ref NativeHashMap<int2, Biome> localPoints, in int2 offset)
     {
         BiomePointsChunk chunk = job.biomePointsChunks[GetBiomePointsIndex(chunkPos)] = chunk;
-        NativeArray<int2> positions = chunk.points.GetKeyArray(Allocator.Temp);
+        NativeArray<int2> positions = chunk.points.GetKeyArray(Allocator.TempJob);
         
         int chunkX = job.chunkX + offset.x;
         int chunkY = job.chunkY + offset.y;
@@ -53,9 +53,9 @@ public struct BiomeCompositionsJob : IJob
         if (chunk.isGenerated.Value) return;
         
         NativeHashMap<int2, Biome> biomePoints = new(100, Allocator.TempJob);
-        for (int x = -2; x < 2; x++)
+        for (int x = -2; x <= 2; x++)
         {
-            for (int y = -2; y < 2; y++)
+            for (int y = -2; y <= 2; y++)
             {
                 FetchBiomePointsFrom(ref this, ref biomePoints, new int2(x, y));
             }
@@ -97,6 +97,8 @@ public struct BiomeCompositionsJob : IJob
         biomePointPositions.Dispose();
         
         biomePoints.Dispose();
+        biomePointsChunks.Dispose();
+        
         chunk.isGenerated.Value = true;
     }
 }
