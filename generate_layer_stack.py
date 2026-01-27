@@ -48,6 +48,9 @@ def generate_layer_stack():
     w.put("[BurstCompile]\n")
     w.put("public static void Dispose(ref LayerStack stack)\n")
     w.open_func()
+    for layer in LAYERS:
+        cluster_class = LAYERS[layer]["pascal_prefix"] + "Cluster"
+        w.put(cluster_class + ".Dispose(ref stack." + cluster_class + ");\n")
     w.close_func()
 
     w.close_func()

@@ -23,11 +23,11 @@ for (int localX = 0; localX < CHUNK_WIDTH; localX++)
             // which is the reciprocal of the distance.
             float influence = math.rsqrt(distSquared);
 
-            Biome biome = biomePoints[biomePointPos];
+            int biome = biomePoints[biomePointPos];
             BiomeComposition.AddBiome(ref comp, biome, influence);
         }
         BiomeComposition.Normalize(ref comp);
-        BiomeCompositionChunk.SetComposition(ref chunk, localX, localY, comp);
+        chunk.points.Add(new int2(localX, localY), comp);
     }
 }
 
