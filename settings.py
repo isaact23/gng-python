@@ -10,7 +10,7 @@ LAYERS = {
         "dimensions": 2,
         "point_sparsity": 24,
         "dependencies": {},
-        "point_data": "Biome", # This type must be defined manually.
+        "point_data": "int",
         "routine": "BiomePointRoutine.cs"
     },
     "biome_compositions": {

@@ -90,6 +90,10 @@ def generate_cluster(layer_name):
     w.close_func()
     w.put("\n")
 
+    # Point getter method
+    #w.put("[BurstCompile]\n")
+    #w.put("public static " + layer["point_data"] + " GetPoint(ref " + class_name + " cluster, " + vec_type + " pos")
+
     # Chunk getter method
     w.put("[BurstCompile]\n")
     w.put("public static " + chunk_name + " GetChunk(ref " + class_name + " cluster, " + vec_type + " chunkPos)\n")
@@ -181,7 +185,7 @@ def generate_cluster(layer_name):
         w.close_func()
     
     if len(layer["dependencies"]) == 0:
-        w.put("handle = job.Schedule()")
+        w.put("handle = job.Schedule();\n")
     else:
         w.put("JobHandle combinedDeps = JobHandle.CombineDependencies(handles.AsArray());\n")
         w.put("handle = job.Schedule(combinedDeps);\n")

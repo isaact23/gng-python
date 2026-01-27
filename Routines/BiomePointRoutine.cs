@@ -37,7 +37,7 @@ for (int i = 0; i < ClusterChunkSettings.BIOME_POINTS_PER_CHUNK; i++)
 
         int biome = BiomeChooser.Choose(altitude, moisture, temperature);
 
-        int2 pos = new int2(randX, randY)
+        int2 pos = new int2(randX, randY);
         chunk.points.Add(pos, biome);
         pointPositions.Add(pos);
     }

@@ -5,6 +5,7 @@
 # Altitudes
 # Terrain
 
+from generate_layer_stack import *
 from generate_chunk import *
 from generate_cluster import *
 from generate_job import *
@@ -12,6 +13,7 @@ from settings import LAYERS
 
 # Generate C# Burst code for one layer.
 def generate_layer(layer_name):
+    generate_layer_stack()
     generate_cluster(layer_name)
     generate_chunk(layer_name)
     generate_job(layer_name)
