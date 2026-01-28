@@ -16,13 +16,10 @@ def generate_cluster(layer_name):
     w = CodeWriter(layer, class_name + ".cs")
 
     # Includes
-    w.put("using System;\n")
-    w.put("using System.Collections.Generic;\n")
     w.put("using Unity.Burst;\n")
     w.put("using Unity.Collections;\n")
     w.put("using Unity.Jobs;\n")
     w.put("using Unity.Mathematics;\n")
-    w.put("using UnityEngine;\n")
     w.put("\n")
 
     # Struct definition
@@ -244,12 +241,13 @@ def generate_cluster(layer_name):
     w.open_func()
     w.put("if (cluster.chunks.Count > 0)\n")
     w.open_func()
-    w.put("NativeArray<" + layer["pascal_prefix"] + "Chunk> chunksToDispose = cluster.chunks.GetValueArray(Allocator.Temp);\n")
-    w.put("foreach (" + layer["pascal_prefix"] + "Chunk chunk in chunksToDispose)\n")
+    w.put("NativeArray<" + vec_type + "> keys = cluster.chunks.GetKeyArray(Allocator.Temp);\n")
+    w.put("foreach (" + vec_type + " key in keys)\n")
     w.open_func()
-    w.put(layer["pascal_prefix"] + "Chunk.Dispose(chunk);\n")
+    w.put("cluster.chunks[key].points.Dispose();\n")
+    w.put("cluster.chunks[key].isGenerated.Dispose();\n")
     w.close_func()
-    w.put("chunksToDispose.Dispose();\n")
+    w.put("keys.Dispose();\n")
     w.close_func()
     w.put("cluster.chunks.Dispose();\n")
     w.put("cluster.jobs.Dispose();\n")
