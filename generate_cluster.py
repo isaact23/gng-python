@@ -219,7 +219,11 @@ def generate_cluster(layer_name):
         #w.put("    " + cluster_class + ".GetChunk(ref cluster." + cluster_name + ", globalPos);\n")
 
         w.put(cluster_class + ".GetChunk(ref cluster." + cluster_name + ", globalPos, out " + LAYERS[dependency]["pascal_prefix"] + "Chunk depChunk);\n")
-        w.put("job." + array_name + "[" + layer["pascal_prefix"] + "Job.Get" + LAYERS[dependency]["pascal_prefix"] + "Index(globalPos)] = depChunk;\n")
+        if dim == 2:
+            w.put("int2 relativePos = new int2(x, y);\n")
+        else:
+            w.put("int3 relativePos = new int3(x, y, z);\n")
+        w.put("job." + array_name + "[" + layer["pascal_prefix"] + "Job.Get" + LAYERS[dependency]["pascal_prefix"] + "Index(relativePos)] = depChunk;\n")
 
         w.close_func()
         w.close_func()

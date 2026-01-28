@@ -30,8 +30,8 @@ def generate_chunk(layer_name):
     w.put("\n")
 
     # Constants
-    w.put("private const int CHUNK_WIDTH = " + str(CHUNK_WIDTH) + ";\n")
-    w.put("\n")
+    #w.put("private const int CHUNK_WIDTH = " + str(CHUNK_WIDTH) + ";\n")
+    #w.put("\n")
 
     # Initialization
     w.put("[BurstCompile]\n")
