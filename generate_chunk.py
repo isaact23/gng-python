@@ -64,6 +64,7 @@ def generate_chunk(layer_name):
     w.open_func()
     w.put("return chunk.points.TryGetValue(pointPos, out data);\n")
     w.close_func()
+    w.put("\n")
 
     # Point setter method
     w.put("[BurstCompile]\n")
@@ -71,14 +72,15 @@ def generate_chunk(layer_name):
     w.open_func()
     w.put("chunk.points[pointPos] = data;\n")
     w.close_func()
+    w.put("\n")
 
     # Disposal routine
-    #w.put("[BurstCompile]\n")
-    #w.put("public static void Dispose(ref " + class_name + " chunk)\n")
-    #w.open_func()
-    #w.put("chunk.points.Dispose();\n")
-    #w.put("chunk.isGenerated.Dispose();\n")
-    #w.close_func()
+    w.put("[BurstCompile]\n")
+    w.put("public static void Dispose(" + class_name + " chunk)\n")
+    w.open_func()
+    w.put("chunk.points.Dispose();\n")
+    w.put("chunk.isGenerated.Dispose();\n")
+    w.close_func()
 
     w.close_func()
     w.close()
