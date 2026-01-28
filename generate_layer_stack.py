@@ -13,33 +13,24 @@ def generate_layer_stack():
 
     # Fields
     for layer in LAYERS:
+        cluster_name = LAYERS[layer]["camel_prefix"] + "Cluster"
         cluster_class = LAYERS[layer]["pascal_prefix"] + "Cluster"
-        w.put("public " + cluster_class + " " + cluster_class + " {get; private set;}\n")
+        w.put("public " + cluster_class + " " + cluster_name + ";\n")
     w.put("\n")
 
     # Initialization routine
     w.put("[BurstCompile]\n")
     w.put("public static void Initialize(int seed, out LayerStack stack)\n")
     w.open_func()
+    w.put("stack = new LayerStack();\n")
     for layer in LAYERS:
         cluster_name = LAYERS[layer]["camel_prefix"] + "Cluster"
         cluster_class = LAYERS[layer]["pascal_prefix"] + "Cluster"
-        w.put(cluster_class + ".Initialize(seed, out " + cluster_class + " " + cluster_name + ");\n")
+        w.put(cluster_class + ".Initialize(seed, out stack." + cluster_name + ");\n")
         for dep in LAYERS[layer]["dependencies"]:
             dep_name = LAYERS[dep]["camel_prefix"] + "Cluster"
-            w.put(cluster_name + "." + dep_name + " = " + dep_name + ";\n")
+            w.put("stack." + cluster_name + "." + dep_name + " = stack." + dep_name + ";\n")
         w.put("\n")
-    
-    # Create a new LayerStack object with all layers in it
-    w.put("stack = new LayerStack\n")
-    w.open_func()
-    for layer in LAYERS:
-        cluster_name = LAYERS[layer]["camel_prefix"] + "Cluster"
-        cluster_class = LAYERS[layer]["pascal_prefix"] + "Cluster"
-        w.put(cluster_class + " = " + cluster_name + ",\n")
-
-    w.shift_left()
-    w.put("};\n")
 
     w.close_func()
     w.put("\n")
@@ -50,7 +41,8 @@ def generate_layer_stack():
     w.open_func()
     for layer in LAYERS:
         cluster_class = LAYERS[layer]["pascal_prefix"] + "Cluster"
-        w.put(cluster_class + ".Dispose(ref stack." + cluster_class + ");\n")
+        cluster_name = LAYERS[layer]["camel_prefix"] + "Cluster"
+        w.put(cluster_class + ".Dispose(ref stack." + cluster_name + ");\n")
     w.close_func()
 
     w.close_func()

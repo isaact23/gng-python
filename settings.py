@@ -69,7 +69,7 @@ LAYERS = {
                 "dependency_range": 0
             }
         },
-        "point_data": "Block",
+        "point_data": "int",
         "routine": "TerrainRoutine.cs"
     }
 }

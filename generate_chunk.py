@@ -6,6 +6,9 @@ def generate_chunk(layer_name):
     layer = LAYERS[layer_name]
     class_name = layer["pascal_prefix"] + "Chunk"
     point_name = layer["point_data"]
+    vec_type = "int2"
+    if (layer["dimensions"] == 3):
+        vec_type = "int3"
 
     w = CodeWriter(layer, class_name + ".cs")
 
@@ -42,6 +45,21 @@ def generate_chunk(layer_name):
     w.put("};\n")
     w.close_func()
     w.put("\n")
+
+    # Point getter method
+    w.put("[BurstCompile]\n")
+    w.put("public static bool GetPoint(ref " + class_name + " chunk, " + vec_type + " pointPos, out " + point_name + " data)\n")
+    w.open_func()
+    w.put("if (chunk.points.TryGetValue(pointPos, out data)) return true;\n")
+    w.put("return false;\n")
+    w.close_func()
+
+    # Point setter method
+    w.put("[BurstCompile]\n")
+    w.put("public static void SetPoint(ref " + class_name + " chunk, " + vec_type + " pointPos, in " + point_name + " data)\n")
+    w.open_func()
+    w.put("chunk.points[pointPos] = data;\n")
+    w.close_func()
 
     # Disposal routine
     w.put("[BurstCompile]\n")

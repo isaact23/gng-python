@@ -42,7 +42,7 @@ def generate_cluster(layer_name):
     w.put("\n")
 
     # Constants
-    w.put("private const int CHUNK_WIDTH = " + str(CHUNK_WIDTH) + ";\n")
+    #w.put("private const int CHUNK_WIDTH = " + str(CHUNK_WIDTH) + ";\n")
 
     # Constant chunk dependency ranges
     # TODO: Remove redundancy between this and generate_job.py
@@ -53,12 +53,11 @@ def generate_cluster(layer_name):
             chunk_range = ceil(block_range / CHUNK_WIDTH)
             dependency_prefix = LAYERS[dependency]["const_prefix"]
             const_name = dependency_prefix + "_CHUNK_RANGE"
-            w.put("private const int " + const_name + " = " + str(chunk_range) + ";\n")
+            #w.put("private const int " + const_name + " = " + str(chunk_range) + ";\n")
             dependency_range_consts[dependency] = {
                 "variable": const_name,
                 "value": chunk_range
             }
-    w.put("\n")
 
     # Initialization routine
     w.put("[BurstCompile]\n")
@@ -67,6 +66,19 @@ def generate_cluster(layer_name):
     w.put("cluster = new " + class_name + "\n")
     w.open_func()
     w.put("chunks = new (1000, Allocator.Persistent),\n")
+    w.put("jobs = new (1000, Allocator.Persistent),\n")
+    w.put("seed = seed\n")
+    w.shift_left()
+    w.put("};\n")
+    w.close_func()
+    w.put("\n")
+
+    w.put("[BurstCompile]\n")
+    w.put("public static void Initialize(int seed, in NativeHashMap<" + vec_type + ", " + chunk_name + "> chunks, out " + class_name + " cluster)\n")
+    w.open_func()
+    w.put("cluster = new " + class_name + "\n")
+    w.open_func()
+    w.put("chunks = chunks,\n")
     w.put("jobs = new (1000, Allocator.Persistent),\n")
     w.put("seed = seed\n")
     w.shift_left()
@@ -90,23 +102,51 @@ def generate_cluster(layer_name):
     w.close_func()
     w.put("\n")
 
-    # Point getter method
-    #w.put("[BurstCompile]\n")
-    #w.put("public static " + layer["point_data"] + " GetPoint(ref " + class_name + " cluster, " + vec_type + " pos")
-
     # Chunk getter method
     w.put("[BurstCompile]\n")
-    w.put("public static " + chunk_name + " GetChunk(ref " + class_name + " cluster, " + vec_type + " chunkPos)\n")
+    w.put("public static void GetChunk(ref " + class_name + " cluster, in " + vec_type + " chunkPos, out " + chunk_name + " chunk)\n")
     w.open_func()
-    w.put("return cluster.chunks[chunkPos];\n");
+    w.put("chunk = cluster.chunks[chunkPos];\n")
     w.close_func()
     w.put("\n")
 
     # Chunk setter method
     w.put("[BurstCompile]\n")
-    w.put("public static void SetChunk(ref " + class_name + " cluster, " + vec_type + " chunkPos, " + chunk_name + " chunk)\n")
+    w.put("public static void SetChunk(ref " + class_name + " cluster, in " + vec_type + " chunkPos, in " + chunk_name + " chunk)\n")
     w.open_func()
-    w.put("cluster.chunks[chunkPos] = chunk;\n");
+    w.put("cluster.chunks[chunkPos] = chunk;\n")
+    w.close_func()
+    w.put("\n")
+
+    # Point getter method
+    w.put("[BurstCompile]\n")
+    w.put("public static bool GetPoint(ref " + class_name + " cluster, " + vec_type + " pointPos, out " + layer["point_data"] + " data)\n")
+    w.open_func()
+    w.put("CoordConvert.GetChunkCoord(pointPos, out " + vec_type + " chunkPos);\n")
+    w.put("if (DidFinishGeneratingChunk(ref cluster, chunkPos))\n")
+    w.open_func()
+    w.put("CoordConvert.GetLocalCoord(pointPos, out " + vec_type + " localPos);\n")
+    w.put(chunk_name + " chunk = cluster.chunks[chunkPos];\n")
+    w.put("return " + layer["pascal_prefix"] + "Chunk.GetPoint(ref chunk, localPos, out data);\n")
+    w.close_func()
+    w.put("data = new();\n")
+    w.put("return false;\n")
+    w.close_func()
+    w.put("\n")
+
+    # Point setter method
+    w.put("[BurstCompile]\n")
+    w.put("public static bool SetPoint(ref " + class_name + " cluster, " + vec_type + " pointPos, in " + layer["point_data"] + " data)\n")
+    w.open_func()
+    w.put("CoordConvert.GetChunkCoord(pointPos, out " + vec_type + " chunkPos);\n")
+    w.put("if (DidFinishGeneratingChunk(ref cluster, chunkPos))\n")
+    w.open_func()
+    w.put("CoordConvert.GetLocalCoord(pointPos, out " + vec_type + " localPos);\n")
+    w.put(chunk_name + " chunk = cluster.chunks[chunkPos];\n")
+    w.put(layer["pascal_prefix"] + "Chunk.SetPoint(ref chunk, localPos, data);\n")
+    w.put("return true;\n")
+    w.close_func()
+    w.put("return false;\n")
     w.close_func()
     w.put("\n")
 
@@ -178,8 +218,11 @@ def generate_cluster(layer_name):
         w.put("handles.Add(innerHandle);\n")
         w.close_func()
 
-        w.put("job." + array_name + "[" + layer["pascal_prefix"] + "Job.Get" + LAYERS[dependency]["pascal_prefix"] + "Index(globalPos)] = \n")
-        w.put("    " + cluster_class + ".GetChunk(ref cluster." + cluster_name + ", globalPos);\n")
+        #w.put("job." + array_name + "[" + layer["pascal_prefix"] + "Job.Get" + LAYERS[dependency]["pascal_prefix"] + "Index(globalPos)] = \n")
+        #w.put("    " + cluster_class + ".GetChunk(ref cluster." + cluster_name + ", globalPos);\n")
+
+        w.put(cluster_class + ".GetChunk(ref cluster." + cluster_name + ", globalPos, out " + LAYERS[dependency]["pascal_prefix"] + "Chunk depChunk);\n")
+        w.put("job." + array_name + "[" + layer["pascal_prefix"] + "Job.Get" + LAYERS[dependency]["pascal_prefix"] + "Index(globalPos)] = depChunk;\n")
 
         w.close_func()
         w.close_func()
