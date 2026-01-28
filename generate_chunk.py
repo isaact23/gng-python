@@ -46,17 +46,28 @@ def generate_chunk(layer_name):
     w.close_func()
     w.put("\n")
 
+    w.put("[BurstCompile]\n")
+    w.put("public static void Initialize(in NativeHashMap<" + vec_type + ", " + point_name + "> points, out " + class_name + " chunk)\n")
+    w.open_func()
+    w.put("chunk = new " + class_name + "\n")
+    w.open_func()
+    w.put("points = points,\n")
+    w.put("isGenerated = new NativeReference<bool>(Allocator.Persistent)\n")
+    w.shift_left()
+    w.put("};\n")
+    w.close_func()
+    w.put("\n")
+
     # Point getter method
     w.put("[BurstCompile]\n")
-    w.put("public static bool GetPoint(ref " + class_name + " chunk, " + vec_type + " pointPos, out " + point_name + " data)\n")
+    w.put("public static bool GetPoint(ref " + class_name + " chunk, in " + vec_type + " pointPos, out " + point_name + " data)\n")
     w.open_func()
-    w.put("if (chunk.points.TryGetValue(pointPos, out data)) return true;\n")
-    w.put("return false;\n")
+    w.put("return chunk.points.TryGetValue(pointPos, out data);\n")
     w.close_func()
 
     # Point setter method
     w.put("[BurstCompile]\n")
-    w.put("public static void SetPoint(ref " + class_name + " chunk, " + vec_type + " pointPos, in " + point_name + " data)\n")
+    w.put("public static void SetPoint(ref " + class_name + " chunk, in " + vec_type + " pointPos, in " + point_name + " data)\n")
     w.open_func()
     w.put("chunk.points[pointPos] = data;\n")
     w.close_func()
