@@ -48,7 +48,7 @@ def generate_job(layer_name):
             chunk_range = ceil(block_range / CHUNK_WIDTH)
             dependency_prefix = LAYERS[dependency]["const_prefix"]
             const_name = dependency_prefix + "_CHUNK_RANGE"
-            w.put("private const int " + const_name + " = " + str(chunk_range) + ";\n")
+            #w.put("private const int " + const_name + " = " + str(chunk_range) + ";\n")
             dependency_range_consts[dependency] = {
                 "variable": const_name,
                 "value": chunk_range

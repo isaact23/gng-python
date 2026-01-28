@@ -151,7 +151,7 @@ def generate_cluster(layer_name):
     w.put("[BurstCompile]\n")
     w.put("public static bool GenerateChunk(ref " + class_name + " cluster, " + vec_type + " chunkPos, out JobHandle handle)\n")
     w.open_func()
-    w.put("if (" + class_name + ".DidStartGeneratingChunk(ref cluster, chunkPos))\n")
+    w.put("if (DidStartGeneratingChunk(ref cluster, chunkPos))\n")
     w.open_func()
     w.put("handle = new JobHandle {};\n")
     w.put("return false;\n")
