@@ -1,5 +1,6 @@
 /* Partial routine - injected into job script by source generator */
 
+// Store LOCAL coordinates of points
 NativeList<int2> pointPositions = new(ClusterChunkSettings.BIOME_POINTS_PER_CHUNK, Allocator.Temp);
 
 for (int i = 0; i < ClusterChunkSettings.BIOME_POINTS_PER_CHUNK; i++)

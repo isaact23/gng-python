@@ -84,20 +84,36 @@ def generate_job(layer_name):
 
             # Helper method fetches relative points from nearby dependency chunks
             w.put("[BurstCompile]\n")
+            w.put("// Given a chunk offset from this chunk, add all points from the dependency chunk to the localPoints array.\n")
+            w.put("// localPoints are local to this chunk.\n")
             w.put("private static void Fetch" + LAYERS[dependency]["pascal_prefix"] + "From(ref " + class_name + " job, " +
                 "ref NativeHashMap<" + int_type + ", " + point_name + "> localPoints, in " + int_type + " offset)\n")
             w.open_func()
-            w.put(chunk_name + " chunk = job." + array_name + "[Get" + LAYERS[dependency]["pascal_prefix"] + "Index(new int2(job.chunkX, job.chunkY))];\n")
-            w.put("NativeArray<" + int_type + "> positions = chunk.points.GetKeyArray(Allocator.TempJob);\n")
-            w.put("\n")
-
+            w.put("// Get the chunk coordinate of the dependency chunk\n")
             w.put("int chunkX = job.chunkX + offset.x;\n")
             w.put("int chunkY = job.chunkY + offset.y;\n")
             if dim == 3:
                 w.put("int chunkZ = job.chunkZ + offset.z;\n")
-
             w.put("\n")
-            w.put("for (int i = 0; i < positions.Length; i++)\n")
+            w.put("// Get the dependency chunk\n")
+            w.put(chunk_name + " chunk = job." + array_name + "[Get" + LAYERS[dependency]["pascal_prefix"] + "Index(new int2(chunkX, chunkY))];\n")
+            w.put("\n")
+            w.put("// Get the local positions of all points in the chunk\n")
+            w.put("NativeArray<" + int_type + "> positions = chunk.points.GetKeyArray(Allocator.TempJob);\n")
+            w.put("\n")
+            w.put("// Convert points from local to their chunk to local to this chunk\n")
+            w.put("foreach (" + int_type + " pos in positions)\n")
+            w.open_func()
+            if dim == 2:
+                w.put("int2 localPos = new int2(pos.x + (offset.x * CHUNK_WIDTH), pos.y + (offset.y * CHUNK_WIDTH));\n")
+            else:
+                w.put("int3 localPos = new int3(pos.x + (offset.x * CHUNK_WIDTH), pos.y + (offset.y * CHUNK_WIDTH), pos.z + (offset.z * CHUNK_WIDTH));\n")
+            w.put("localPoints.Add(localPos, chunk.points[pos]);\n")
+            w.close_func()
+            w.put("positions.Dispose();\n")
+
+
+            '''w.put("for (int i = 0; i < positions.Length; i++)\n")
             w.open_func()
             w.put(int_type + " pos = positions[i];\n")
 
@@ -108,7 +124,9 @@ def generate_job(layer_name):
 
             w.put("localPoints.Add(adjustedPos, chunk.points[pos]);\n")
             w.close_func()
-            w.put("positions.Dispose();\n")
+            w.put("positions.Dispose();\n")'''
+
+
             w.close_func()
             w.put("\n")
 

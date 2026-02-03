@@ -1,5 +1,6 @@
 /* Partial routine - injected into job script by source generator */
 
+// Get the local positions of biome points relative to this chunk
 NativeArray<int2> biomePointPositions = biomePoints.GetKeyArray(Allocator.Temp);
 
 // Calculate biome compositions for all tiles in the biome chunk

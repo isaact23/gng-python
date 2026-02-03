@@ -25,6 +25,7 @@ def generate_chunk(layer_name):
 
     # Fields
     # TODO: If sparsity is 1, use an array instead of a hash map
+    w.put("// Coordinates are in LOCAL space\n")
     w.put("public NativeHashMap<int" + str(layer["dimensions"]) + ", " + point_name + "> points;\n")
     w.put("public NativeReference<bool> isGenerated;\n")
     w.put("\n")
